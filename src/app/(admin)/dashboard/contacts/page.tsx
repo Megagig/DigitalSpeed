@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { Eye, Trash } from 'lucide-react';
+import { FiEye, FiTrash } from 'react-icons/fi';
 import DeleteContactButton from '@/components/admin/contacts/DeleteContactButton';
 
 async function getContacts() {
@@ -81,10 +81,14 @@ export default async function ContactsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{contact.email}</div>
+                      <div className="text-sm text-gray-500">
+                        {contact.email}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{contact.phone || '-'}</div>
+                      <div className="text-sm text-gray-500">
+                        {contact.phone || '-'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {contact.project ? (
@@ -118,7 +122,7 @@ export default async function ContactsPage() {
                           href={`/dashboard/contacts/${contact.id}`}
                           className="text-blue-600 hover:text-blue-900"
                         >
-                          <Eye size={18} />
+                          <FiEye size={18} />
                         </Link>
                         <DeleteContactButton contactId={contact.id} />
                       </div>
@@ -127,7 +131,10 @@ export default async function ContactsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No contacts found.
                   </td>
                 </tr>

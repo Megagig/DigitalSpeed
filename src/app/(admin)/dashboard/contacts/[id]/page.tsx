@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import { formatDateTime } from '@/lib/utils';
-import { ArrowLeft, Mail, Phone, Calendar, Briefcase } from 'lucide-react';
+import {
+  FiArrowLeft,
+  FiMail,
+  FiPhone,
+  FiCalendar,
+  FiBriefcase,
+} from 'react-icons/fi';
 import DeleteContactButton from '@/components/admin/contacts/DeleteContactButton';
 
 interface ContactDetailPageProps {
@@ -18,11 +24,11 @@ async function getContact(id: string) {
       project: true,
     },
   });
-  
+
   if (!contact) {
     notFound();
   }
-  
+
   // Mark as read if it's not already
   if (!contact.isRead) {
     await prisma.contact.update({
@@ -30,13 +36,15 @@ async function getContact(id: string) {
       data: { isRead: true },
     });
   }
-  
+
   return contact;
 }
 
-export default async function ContactDetailPage({ params }: ContactDetailPageProps) {
+export default async function ContactDetailPage({
+  params,
+}: ContactDetailPageProps) {
   const contact = await getContact(params.id);
-  
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -46,13 +54,13 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
             href="/dashboard/contacts"
             className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            <ArrowLeft size={16} className="mr-2" />
+            <FiArrowLeft size={16} className="mr-2" />
             Back to Contacts
           </Link>
           <DeleteContactButton contactId={contact.id} />
         </div>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
@@ -61,29 +69,35 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
                 {contact.firstName} {contact.lastName || ''}
               </h2>
               <div className="flex items-center mt-2 text-gray-500">
-                <Mail size={16} className="mr-2" />
-                <a href={`mailto:${contact.email}`} className="hover:text-blue-600">
+                <FiMail size={16} className="mr-2" />
+                <a
+                  href={`mailto:${contact.email}`}
+                  className="hover:text-blue-600"
+                >
                   {contact.email}
                 </a>
               </div>
               {contact.phone && (
                 <div className="flex items-center mt-2 text-gray-500">
-                  <Phone size={16} className="mr-2" />
-                  <a href={`tel:${contact.phone}`} className="hover:text-blue-600">
+                  <FiPhone size={16} className="mr-2" />
+                  <a
+                    href={`tel:${contact.phone}`}
+                    className="hover:text-blue-600"
+                  >
                     {contact.phone}
                   </a>
                 </div>
               )}
             </div>
-            
+
             <div className="mt-4 md:mt-0">
               <div className="flex items-center text-gray-500">
-                <Calendar size={16} className="mr-2" />
+                <FiCalendar size={16} className="mr-2" />
                 <span>{formatDateTime(contact.createdAt)}</span>
               </div>
               {contact.project && (
                 <div className="flex items-center mt-2 text-gray-500">
-                  <Briefcase size={16} className="mr-2" />
+                  <FiBriefcase size={16} className="mr-2" />
                   <Link
                     href={`/dashboard/projects/${contact.project.id}`}
                     className="text-blue-600 hover:text-blue-800"
@@ -105,7 +119,7 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
               </div>
             </div>
           </div>
-          
+
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-3">Message</h3>
             <div className="bg-gray-50 p-4 rounded-md whitespace-pre-wrap">

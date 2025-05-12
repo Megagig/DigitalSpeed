@@ -77,6 +77,7 @@ model Blog {
   tags        Tag[]
   views       Int        @default(0)
   likes       Int        @default(0)
+  comments    Comment[]
 }
 
 model Category {
@@ -125,6 +126,7 @@ model Product {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   sales       Sale[]
+  reviews     Review[]
 }
 
 model ProductImage {
@@ -174,6 +176,34 @@ model Setting {
   value       String     @db.Text
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+// Comment model
+model Comment {
+  id          String     @id @default(cuid())
+  content     String     @db.Text
+  authorName  String
+  authorEmail String
+  isApproved  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  blogId      String
+  blog        Blog       @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Comment?   @relation("CommentToComment", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     Comment[]  @relation("CommentToComment")
+}
+
+// Review model for products
+model Review {
+  id          String     @id @default(cuid())
+  rating      Int
+  content     String     @db.Text
+  authorName  String
+  authorEmail String
+  isApproved  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 // Audit Trail model

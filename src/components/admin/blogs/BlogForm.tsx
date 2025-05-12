@@ -8,9 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Category, Tag, Blog } from '@prisma/client';
 import { slugify } from '@/lib/utils';
 import { uploadImage } from '@/lib/cloudinary';
-import { ArrowLeft, Save, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Image as ImageIcon } from 'react-icons/fi';
 import Link from 'next/link';
-import Image from 'next/image';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 const blogSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -35,8 +35,6 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(blog?.featuredImage || null);
   const [isUploading, setIsUploading] = useState(false);
 
   const {
@@ -73,34 +71,8 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
     }
   }, [title, setValue, blog]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageFile(file);
-
-    // Create a preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleImageUpload = async () => {
-    if (!imageFile) return null;
-
-    try {
-      setIsUploading(true);
-      const result = await uploadImage(imageFile);
-      return result.secure_url;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      setError('Failed to upload image. Please try again.');
-      return null;
-    } finally {
-      setIsUploading(false);
-    }
+  const handleImageUploaded = (url: string) => {
+    setValue('featuredImage', url);
   };
 
   const onSubmit = async (data: BlogFormData) => {
@@ -108,29 +80,17 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
     setError(null);
 
     try {
-      // Upload image if selected
-      let imageUrl = data.featuredImage;
-      if (imageFile) {
-        imageUrl = await handleImageUpload();
-        if (!imageUrl) {
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      const blogData = {
-        ...data,
-        featuredImage: imageUrl,
-      };
-
       // Create or update blog
-      const response = await fetch(blog ? `/api/blogs/${blog.id}` : '/api/blogs', {
-        method: blog ? 'PATCH' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(blogData),
-      });
+      const response = await fetch(
+        blog ? `/api/blogs/${blog.id}` : '/api/blogs',
+        {
+          method: blog ? 'PATCH' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -140,7 +100,9 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
       router.push('/dashboard/blogs');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred'
+      );
       setIsSubmitting(false);
     }
   };
@@ -160,7 +122,10 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700"
+            >
               Title *
             </label>
             <input
@@ -170,12 +135,17 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
             {errors.title && (
-              <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="slug"
+              className="block text-sm font-medium text-gray-700"
+            >
               Slug *
             </label>
             <input
@@ -184,13 +154,18 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
               {...register('slug')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-            {errors.slug && <p className="mt-1 text-sm text-red-600">{errors.slug.message}</p>}
+            {errors.slug && (
+              <p className="mt-1 text-sm text-red-600">{errors.slug.message}</p>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-700"
+            >
               Category
             </label>
             <select
@@ -208,7 +183,10 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
           </div>
 
           <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="tags"
+              className="block text-sm font-medium text-gray-700"
+            >
               Tags
             </label>
             <select
@@ -223,12 +201,17 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-gray-500">Hold Ctrl (or Cmd) to select multiple tags</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Hold Ctrl (or Cmd) to select multiple tags
+            </p>
           </div>
         </div>
 
         <div>
-          <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="excerpt"
+            className="block text-sm font-medium text-gray-700"
+          >
             Excerpt
           </label>
           <textarea
@@ -241,7 +224,10 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
         </div>
 
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium text-gray-700"
+          >
             Content *
           </label>
           <textarea
@@ -251,42 +237,22 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           ></textarea>
           {errors.content && (
-            <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.content.message}
+            </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Featured Image</label>
-          <div className="mt-1 flex items-center space-x-4">
-            {imagePreview ? (
-              <div className="relative h-32 w-32 rounded-md overflow-hidden">
-                <Image
-                  src={imagePreview}
-                  alt="Featured image preview"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="flex h-32 w-32 items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50">
-                <ImageIcon className="h-8 w-8 text-gray-400" />
-              </div>
-            )}
-            <div>
-              <input
-                type="file"
-                id="image"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="sr-only"
-              />
-              <label
-                htmlFor="image"
-                className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-medium text-blue-600 shadow-sm hover:text-blue-500"
-              >
-                Change Image
-              </label>
-            </div>
+          <label className="block text-sm font-medium text-gray-700">
+            Featured Image
+          </label>
+          <div className="mt-1">
+            <ImageUpload
+              onImageUploaded={handleImageUploaded}
+              currentImage={blog?.featuredImage}
+              className="w-full"
+            />
           </div>
         </div>
 
@@ -297,7 +263,10 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
             {...register('published')}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="published" className="ml-2 block text-sm text-gray-700">
+          <label
+            htmlFor="published"
+            className="ml-2 block text-sm text-gray-700"
+          >
             Publish this blog post
           </label>
         </div>

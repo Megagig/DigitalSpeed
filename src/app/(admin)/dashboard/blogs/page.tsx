@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { PlusCircle, Edit, Trash } from 'lucide-react';
+import { FiPlusCircle, FiEdit, FiTrash } from 'react-icons/fi';
 import DeleteBlogButton from '@/components/admin/blogs/DeleteBlogButton';
 
 async function getBlogs() {
@@ -25,7 +25,7 @@ export default async function BlogsPage() {
           href="/dashboard/blogs/new"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
-          <PlusCircle size={20} />
+          <FiPlusCircle size={20} />
           <span>Add Blog</span>
         </Link>
       </div>
@@ -84,12 +84,18 @@ export default async function BlogsPage() {
                           </div>
                         ) : (
                           <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">No img</span>
+                            <span className="text-gray-500 text-xs">
+                              No img
+                            </span>
                           </div>
                         )}
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{blog.title}</div>
-                          <div className="text-sm text-gray-500">{blog.slug}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {blog.title}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {blog.slug}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -118,7 +124,7 @@ export default async function BlogsPage() {
                           href={`/dashboard/blogs/${blog.id}`}
                           className="text-blue-600 hover:text-blue-900"
                         >
-                          <Edit size={18} />
+                          <FiEdit size={18} />
                         </Link>
                         <DeleteBlogButton blogId={blog.id} />
                       </div>
@@ -127,7 +133,10 @@ export default async function BlogsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No blogs found. Create your first blog post!
                   </td>
                 </tr>

@@ -7,10 +7,9 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Project, ProjectImage } from '@prisma/client';
 import { slugify } from '@/lib/utils';
-import { uploadImage } from '@/lib/cloudinary';
-import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Save } from 'react-icons/fi';
 import Link from 'next/link';
-import Image from 'next/image';
+import MultiImageUpload from '@/components/ui/MultiImageUpload';
 
 const projectSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -29,8 +28,7 @@ export default function ProjectForm({ project }: ProjectFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>(
+  const [projectImages, setProjectImages] = useState<string[]>(
     project?.images.map((img) => img.url) || []
   );
   const [isUploading, setIsUploading] = useState(false);
@@ -64,47 +62,8 @@ export default function ProjectForm({ project }: ProjectFormProps) {
     }
   }, [title, setValue, project]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const newFiles = Array.from(files);
-    setImageFiles((prev) => [...prev, ...newFiles]);
-
-    // Create previews
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-    setImagePreviews((prev) => [...prev, ...newPreviews]);
-  };
-
-  const removeImage = (index: number) => {
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleImagesUpload = async () => {
-    if (imageFiles.length === 0) return imagePreviews;
-
-    try {
-      setIsUploading(true);
-      const uploadPromises = imageFiles.map((file) => uploadImage(file));
-      const results = await Promise.all(uploadPromises);
-      
-      // Get URLs from existing images (that weren't newly uploaded)
-      const existingImageUrls = imagePreviews.filter(
-        (url) => !url.startsWith('blob:')
-      );
-      
-      // Add new image URLs
-      const newImageUrls = results.map((result) => result.secure_url);
-      
-      return [...existingImageUrls, ...newImageUrls];
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      setError('Failed to upload images. Please try again.');
-      return null;
-    } finally {
-      setIsUploading(false);
-    }
+  const handleImagesUploaded = (urls: string[]) => {
+    setProjectImages(urls);
   };
 
   const onSubmit = async (data: ProjectFormData) => {
@@ -112,26 +71,22 @@ export default function ProjectForm({ project }: ProjectFormProps) {
     setError(null);
 
     try {
-      // Upload images if selected
-      const imageUrls = await handleImagesUpload();
-      if (!imageUrls) {
-        setIsSubmitting(false);
-        return;
-      }
-
       const projectData = {
         ...data,
-        images: imageUrls,
+        images: projectImages,
       };
 
       // Create or update project
-      const response = await fetch(project ? `/api/projects/${project.id}` : '/api/projects', {
-        method: project ? 'PATCH' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(projectData),
-      });
+      const response = await fetch(
+        project ? `/api/projects/${project.id}` : '/api/projects',
+        {
+          method: project ? 'PATCH' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(projectData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -141,7 +96,9 @@ export default function ProjectForm({ project }: ProjectFormProps) {
       router.push('/dashboard/projects');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred'
+      );
       setIsSubmitting(false);
     }
   };
@@ -161,7 +118,10 @@ export default function ProjectForm({ project }: ProjectFormProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700"
+            >
               Title *
             </label>
             <input
@@ -171,12 +131,17 @@ export default function ProjectForm({ project }: ProjectFormProps) {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
             {errors.title && (
-              <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.title.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="slug"
+              className="block text-sm font-medium text-gray-700"
+            >
               Slug *
             </label>
             <input
@@ -185,12 +150,17 @@ export default function ProjectForm({ project }: ProjectFormProps) {
               {...register('slug')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-            {errors.slug && <p className="mt-1 text-sm text-red-600">{errors.slug.message}</p>}
+            {errors.slug && (
+              <p className="mt-1 text-sm text-red-600">{errors.slug.message}</p>
+            )}
           </div>
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700"
+          >
             Description *
           </label>
           <textarea
@@ -200,55 +170,21 @@ export default function ProjectForm({ project }: ProjectFormProps) {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           ></textarea>
           {errors.description && (
-            <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.description.message}
+            </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Project Images</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-            {imagePreviews.map((preview, index) => (
-              <div key={index} className="relative group">
-                <div className="relative h-32 w-full rounded-md overflow-hidden">
-                  <Image
-                    src={preview}
-                    alt={`Project image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-            <div className="relative h-32 w-full">
-              <input
-                type="file"
-                id="images"
-                accept="image/*"
-                multiple
-                onChange={handleImageChange}
-                className="sr-only"
-              />
-              <label
-                htmlFor="images"
-                className="flex h-full w-full items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:bg-gray-100"
-              >
-                <div className="flex flex-col items-center">
-                  <ImageIcon className="h-8 w-8 text-gray-400 mb-1" />
-                  <span className="text-sm text-gray-500">Add Images</span>
-                </div>
-              </label>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500">
-            You can upload multiple images for your project.
-          </p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Project Images
+          </label>
+          <MultiImageUpload
+            onImagesUploaded={handleImagesUploaded}
+            currentImages={projectImages}
+            className="w-full"
+          />
         </div>
 
         <div className="flex items-center">
@@ -258,7 +194,10 @@ export default function ProjectForm({ project }: ProjectFormProps) {
             {...register('published')}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="published" className="ml-2 block text-sm text-gray-700">
+          <label
+            htmlFor="published"
+            className="ml-2 block text-sm text-gray-700"
+          >
             Publish this project
           </label>
         </div>
