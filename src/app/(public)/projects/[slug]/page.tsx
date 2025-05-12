@@ -4,91 +4,56 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaGithub, FaExternalLinkAlt, FaCalendarAlt, FaUser, FaTag } from 'react-icons/fa';
-
-// Sample project data (in a real app, this would come from your database)
-const projects = [
-  {
-    id: 1,
-    title: 'E-commerce Platform',
-    slug: 'e-commerce-platform',
-    category: 'website',
-    images: [
-      '/images/placeholders/project-1-1.jpg',
-      '/images/placeholders/project-1-2.jpg',
-      '/images/placeholders/project-1-3.jpg',
-    ],
-    description: 'A full-featured e-commerce platform built with Next.js and PostgreSQL. This project includes user authentication, product management, shopping cart functionality, payment processing, and order management.',
-    longDescription: `
-      This e-commerce platform was built to provide a seamless shopping experience for users while giving store owners powerful tools to manage their products and orders.
-      
-      The frontend is built with Next.js and React, providing a fast and responsive user interface. The backend uses Node.js with Express and PostgreSQL for data storage.
-      
-      Key features include:
-      - User authentication and profile management
-      - Product catalog with categories and search functionality
-      - Shopping cart and wishlist
-      - Secure checkout process with multiple payment options
-      - Order tracking and history
-      - Admin dashboard for product and order management
-      - Analytics and reporting
-    `,
-    client: 'RetailTech Inc.',
-    startDate: '2023-01-15',
-    endDate: '2023-04-30',
-    designer: 'Jane Smith',
-    technologies: ['Next.js', 'React', 'Node.js', 'PostgreSQL', 'Tailwind CSS', 'Stripe'],
-    liveUrl: 'https://example-ecommerce.com',
-    githubUrl: 'https://github.com/yourusername/ecommerce-platform',
-    isPrivate: false,
-  },
-  {
-    id: 2,
-    title: 'Fitness Tracker App',
-    slug: 'fitness-tracker-app',
-    category: 'app',
-    images: [
-      '/images/placeholders/project-2-1.jpg',
-      '/images/placeholders/project-2-2.jpg',
-      '/images/placeholders/project-2-3.jpg',
-    ],
-    description: 'A mobile application for tracking workouts and nutrition.',
-    longDescription: `
-      This fitness tracker app helps users monitor their workouts, nutrition, and overall health progress. Built with React Native for cross-platform compatibility.
-      
-      The app syncs data with a cloud database, allowing users to access their information from multiple devices and never lose their progress.
-      
-      Key features include:
-      - Workout tracking with custom exercise creation
-      - Nutrition logging and calorie counting
-      - Progress photos and measurements
-      - Goal setting and achievement tracking
-      - Social sharing and community features
-      - Integration with popular fitness wearables
-      - Personalized workout and meal recommendations
-    `,
-    client: 'FitLife Solutions',
-    startDate: '2022-09-10',
-    endDate: '2023-01-05',
-    designer: 'Michael Johnson',
-    technologies: ['React Native', 'Firebase', 'Node.js', 'Express', 'MongoDB'],
-    liveUrl: 'https://fitnesstracker.example.com',
-    githubUrl: 'https://github.com/yourusername/fitness-tracker',
-    isPrivate: true,
-  },
-];
+import {
+  FaGithub,
+  FaExternalLinkAlt,
+  FaCalendarAlt,
+  FaUser,
+  FaTag,
+} from 'react-icons/fa';
+import { formatDate } from '@/lib/utils';
+import { ProjectWithImages } from '@/types';
+import ReactMarkdown from 'react-markdown';
 
 const ProjectDetailsPage = () => {
   const { slug } = useParams();
-  const [project, setProject] = useState<any>(null);
+  const [project, setProject] = useState<ProjectWithImages | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
-    // In a real app, you would fetch the project data from your API
-    const foundProject = projects.find(p => p.slug === slug);
-    setProject(foundProject);
-    setLoading(false);
+    const fetchProject = async () => {
+      try {
+        const response = await fetch(`/api/projects/slug/${slug}`);
+        
+        if (!response.ok) {
+          setLoading(false);
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.project) {
+          setProject(data.project);
+          
+          // Increment view count
+          fetch(`/api/projects/${data.project.id}/view`, {
+            method: 'POST',
+          }).catch((error) =>
+            console.error('Error incrementing view count:', error)
+          );
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        setLoading(false);
+      }
+    };
+    
+    if (slug) {
+      fetchProject();
+    }
   }, [slug]);
 
   if (loading) {
@@ -105,7 +70,7 @@ const ProjectDetailsPage = () => {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Project Not Found</h1>
         <p className="text-gray-700 dark:text-gray-300 mb-8">The project you are looking for does not exist or has been removed.</p>
         <Link 
-          href="/#projects"
+          href="/projects"
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-md transition-colors"
         >
           Back to Projects
@@ -123,42 +88,48 @@ const ProjectDetailsPage = () => {
         </h1>
         
         {/* Project Category */}
-        <div className="mb-8">
-          <span className="inline-block px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full">
-            {project.category.charAt(0).toUpperCase() + project.category.slice(1)}
-          </span>
-        </div>
+        {project.category && (
+          <div className="mb-8">
+            <span className="inline-block px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full">
+              {project.category.charAt(0).toUpperCase() + project.category.slice(1)}
+            </span>
+          </div>
+        )}
         
         {/* Project Images */}
-        <div className="mb-12">
-          <div className="relative h-96 w-full mb-4 rounded-lg overflow-hidden">
-            <Image
-              src={project.images[activeImage]}
-              alt={`${project.title} - Image ${activeImage + 1}`}
-              fill
-              className="object-cover"
-            />
+        {project.images && project.images.length > 0 && (
+          <div className="mb-12">
+            <div className="relative h-96 w-full mb-4 rounded-lg overflow-hidden">
+              <Image
+                src={project.images[activeImage].url}
+                alt={`${project.title} - Image ${activeImage + 1}`}
+                fill
+                className="object-cover"
+              />
+            </div>
+            
+            {project.images.length > 1 && (
+              <div className="flex space-x-4 overflow-x-auto pb-2">
+                {project.images.map((image, index) => (
+                  <button
+                    key={image.id}
+                    onClick={() => setActiveImage(index)}
+                    className={`relative h-20 w-32 rounded-md overflow-hidden ${
+                      activeImage === index ? 'ring-2 ring-purple-600' : ''
+                    }`}
+                  >
+                    <Image
+                      src={image.url}
+                      alt={`${project.title} - Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          
-          <div className="flex space-x-4 overflow-x-auto pb-2">
-            {project.images.map((image: string, index: number) => (
-              <button
-                key={index}
-                onClick={() => setActiveImage(index)}
-                className={`relative h-20 w-32 rounded-md overflow-hidden ${
-                  activeImage === index ? 'ring-2 ring-purple-600' : ''
-                }`}
-              >
-                <Image
-                  src={image}
-                  alt={`${project.title} - Thumbnail ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
         
         {/* Project Details */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -168,42 +139,36 @@ const ProjectDetailsPage = () => {
               Project Overview
             </h2>
             <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
-              <p>{project.longDescription}</p>
+              <ReactMarkdown>{project.description}</ReactMarkdown>
             </div>
             
-            <div className="flex flex-wrap gap-4 mb-8">
-              {project.technologies.map((tech: string, index: number) => (
-                <span 
-                  key={index}
-                  className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            {project.technologies && (
+              <div className="flex flex-wrap gap-4 mb-8">
+                {project.technologies.split(',').map((tech, index) => (
+                  <span 
+                    key={index}
+                    className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm"
+                  >
+                    {tech.trim()}
+                  </span>
+                ))}
+              </div>
+            )}
             
             <div className="flex flex-wrap gap-4">
-              <a 
-                href={project.liveUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-md transition-colors"
-              >
-                <FaExternalLinkAlt className="mr-2" />
-                View Project
-              </a>
-              
-              {project.isPrivate ? (
+              {project.liveUrl && (
                 <a 
-                  href="https://www.buymeacoffee.com/yourusername" 
+                  href={project.liveUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-md transition-colors"
+                  className="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-md transition-colors"
                 >
-                  <FaGithub className="mr-2" />
-                  Buy Me a Coffee for Source Code
+                  <FaExternalLinkAlt className="mr-2" />
+                  View Project
                 </a>
-              ) : (
+              )}
+              
+              {project.githubUrl && (
                 <a 
                   href={project.githubUrl} 
                   target="_blank" 
@@ -229,34 +194,38 @@ const ProjectDetailsPage = () => {
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white">Date</h4>
                   <p className="text-gray-700 dark:text-gray-300">
-                    {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+                    {formatDate(project.createdAt)}
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-start">
-                <FaUser className="text-purple-600 dark:text-purple-400 mt-1 mr-3" />
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Client</h4>
-                  <p className="text-gray-700 dark:text-gray-300">{project.client}</p>
+              {project.client && (
+                <div className="flex items-start">
+                  <FaUser className="text-purple-600 dark:text-purple-400 mt-1 mr-3" />
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Client</h4>
+                    <p className="text-gray-700 dark:text-gray-300">{project.client}</p>
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {project.category && (
+                <div className="flex items-start">
+                  <FaTag className="text-purple-600 dark:text-purple-400 mt-1 mr-3" />
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Category</h4>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {project.category.charAt(0).toUpperCase() + project.category.slice(1)}
+                    </p>
+                  </div>
+                </div>
+              )}
               
               <div className="flex items-start">
                 <FaUser className="text-purple-600 dark:text-purple-400 mt-1 mr-3" />
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Designer</h4>
-                  <p className="text-gray-700 dark:text-gray-300">{project.designer}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <FaTag className="text-purple-600 dark:text-purple-400 mt-1 mr-3" />
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Category</h4>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {project.category.charAt(0).toUpperCase() + project.category.slice(1)}
-                  </p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Likes</h4>
+                  <p className="text-gray-700 dark:text-gray-300">{project.likes || 0}</p>
                 </div>
               </div>
             </div>

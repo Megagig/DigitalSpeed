@@ -4,106 +4,46 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 
-// Sample gallery data (in a real app, this would come from your database)
-const allImages = [
-  {
-    id: 1,
-    title: 'Modern Website Design',
-    description: 'A clean and modern website design for a tech startup.',
-    imageUrl: '/images/placeholders/gallery-1.jpg',
-    category: 'Web Design',
-  },
-  {
-    id: 2,
-    title: 'Mobile App Interface',
-    description:
-      'User interface design for a fitness tracking mobile application.',
-    imageUrl: '/images/placeholders/gallery-2.jpg',
-    category: 'UI/UX',
-  },
-  {
-    id: 3,
-    title: 'E-commerce Product Page',
-    description: 'Product page design for an online fashion store.',
-    imageUrl: '/images/placeholders/gallery-3.jpg',
-    category: 'Web Design',
-  },
-  {
-    id: 4,
-    title: 'Dashboard UI',
-    description: 'Admin dashboard interface for a SaaS platform.',
-    imageUrl: '/images/placeholders/gallery-4.jpg',
-    category: 'UI/UX',
-  },
-  {
-    id: 5,
-    title: 'Landing Page',
-    description: 'Conversion-focused landing page for a digital product.',
-    imageUrl: '/images/placeholders/gallery-5.jpg',
-    category: 'Web Design',
-  },
-  {
-    id: 6,
-    title: 'Mobile App Onboarding',
-    description: 'Onboarding screens for a travel booking application.',
-    imageUrl: '/images/placeholders/gallery-6.jpg',
-    category: 'UI/UX',
-  },
-  {
-    id: 7,
-    title: 'Blog Layout',
-    description: 'Clean and readable blog layout design.',
-    imageUrl: '/images/placeholders/gallery-7.jpg',
-    category: 'Web Design',
-  },
-  {
-    id: 8,
-    title: 'Social Media App',
-    description: 'Interface design for a social networking application.',
-    imageUrl: '/images/placeholders/gallery-8.jpg',
-    category: 'UI/UX',
-  },
-  {
-    id: 9,
-    title: 'Portfolio Website',
-    description: 'Creative portfolio website for a photographer.',
-    imageUrl: '/images/placeholders/gallery-9.jpg',
-    category: 'Web Design',
-  },
-  {
-    id: 10,
-    title: 'Food Delivery App',
-    description: 'User interface for a food delivery mobile application.',
-    imageUrl: '/images/placeholders/gallery-10.jpg',
-    category: 'UI/UX',
-  },
-  {
-    id: 11,
-    title: 'Corporate Website',
-    description: 'Professional website design for a consulting firm.',
-    imageUrl: '/images/placeholders/gallery-11.jpg',
-    category: 'Web Design',
-  },
-  {
-    id: 12,
-    title: 'Music Player App',
-    description: 'Interface design for a music streaming application.',
-    imageUrl: '/images/placeholders/gallery-12.jpg',
-    category: 'UI/UX',
-  },
-];
-
-// Get all unique categories
-const allCategories = [
-  'All',
-  ...new Set(allImages.map((image) => image.category)),
-];
-
 const GalleryPage = () => {
-  const [images, setImages] = useState(allImages);
+  const [allImages, setAllImages] = useState<any[]>([]);
+  const [images, setImages] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedImage, setSelectedImage] = useState<any>(null);
+
+  // Fetch gallery items from API
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const response = await fetch('/api/gallery');
+        const data = await response.json();
+
+        if (data) {
+          setAllImages(data);
+          setImages(data);
+
+          // Extract categories
+          const uniqueCategories = new Set<string>();
+          data.forEach((image: any) => {
+            if (image.category) {
+              uniqueCategories.add(image.category);
+            }
+          });
+
+          setCategories(['All', ...Array.from(uniqueCategories)]);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching gallery:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
+  }, []);
 
   // Filter images based on category and search query
   useEffect(() => {
@@ -119,13 +59,13 @@ const GalleryPage = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (image) =>
-          image.title.toLowerCase().includes(query) ||
-          image.description.toLowerCase().includes(query)
+          (image.title && image.title.toLowerCase().includes(query)) ||
+          (image.description && image.description.toLowerCase().includes(query))
       );
     }
 
     setImages(filtered);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, allImages]);
 
   // Handle image click to open lightbox
   const openLightbox = (image: any) => {
@@ -170,7 +110,7 @@ const GalleryPage = () => {
 
             {/* Category Filter */}
             <div className="flex flex-wrap gap-3">
-              {allCategories.map((category, index) => (
+              {categories.map((category, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveCategory(category)}
@@ -188,7 +128,11 @@ const GalleryPage = () => {
         </div>
 
         {/* Gallery Grid */}
-        {images.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          </div>
+        ) : images.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {images.map((image) => (
               <div
@@ -198,19 +142,21 @@ const GalleryPage = () => {
               >
                 <div className="relative h-64 w-full">
                   <Image
-                    src={image.imageUrl}
-                    alt={image.title}
+                    src={image.url}
+                    alt={image.title || 'Gallery image'}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                 </div>
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity duration-300 flex flex-col justify-end p-4">
                   <h3 className="text-white font-semibold text-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    {image.title}
+                    {image.title || 'Untitled'}
                   </h3>
-                  <p className="text-gray-200 text-sm transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">
-                    {image.category}
-                  </p>
+                  {image.category && (
+                    <p className="text-gray-200 text-sm transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">
+                      {image.category}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -240,8 +186,8 @@ const GalleryPage = () => {
 
               <div className="relative h-[70vh]">
                 <Image
-                  src={selectedImage.imageUrl}
-                  alt={selectedImage.title}
+                  src={selectedImage.url}
+                  alt={selectedImage.title || 'Gallery image'}
                   fill
                   className="object-contain"
                 />
@@ -249,14 +195,18 @@ const GalleryPage = () => {
 
               <div className="bg-white dark:bg-gray-900 p-4 mt-4 rounded-md">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {selectedImage.title}
+                  {selectedImage.title || 'Untitled'}
                 </h3>
-                <p className="text-gray-700 dark:text-gray-300 mb-2">
-                  {selectedImage.description}
-                </p>
-                <span className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full text-sm">
-                  {selectedImage.category}
-                </span>
+                {selectedImage.description && (
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">
+                    {selectedImage.description}
+                  </p>
+                )}
+                {selectedImage.category && (
+                  <span className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full text-sm">
+                    {selectedImage.category}
+                  </span>
+                )}
               </div>
             </div>
           </div>
