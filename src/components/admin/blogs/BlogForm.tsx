@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Category, Tag, Blog } from '@prisma/client';
 import { slugify } from '@/lib/utils';
 import { uploadImage } from '@/lib/cloudinary';
-import { ArrowLeft, Save, Image as ImageIcon } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiImage } from 'react-icons/fi';
 import Link from 'next/link';
 import ImageUpload from '@/components/ui/ImageUpload';
 
@@ -276,7 +276,7 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
             href="/dashboard/blogs"
             className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            <ArrowLeft size={16} className="mr-2" />
+            <FiArrowLeft size={16} className="mr-2" />
             Back to Blogs
           </Link>
           <button
@@ -284,7 +284,7 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
             disabled={isSubmitting || isUploading}
             className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save size={16} className="mr-2" />
+            <FiSave size={16} className="mr-2" />
             {isSubmitting ? 'Saving...' : 'Save Blog'}
           </button>
         </div>

@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { FiTrash } from 'react-icons/fi';
+import { FiTrash2 } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
+import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
+import { useToast } from '@/components/ui/Toast';
 
 interface DeleteBlogButtonProps {
   blogId: string;
@@ -12,6 +15,7 @@ export default function DeleteBlogButton({ blogId }: DeleteBlogButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const router = useRouter();
+  const { addToast } = useToast();
 
   const handleDelete = async () => {
     if (isDeleting) return;
@@ -26,10 +30,20 @@ export default function DeleteBlogButton({ blogId }: DeleteBlogButtonProps) {
         throw new Error('Failed to delete blog');
       }
 
+      addToast({
+        type: 'success',
+        title: 'Success',
+        message: 'Blog post has been deleted successfully.',
+      });
+
       router.refresh();
     } catch (error) {
       console.error('Error deleting blog:', error);
-      alert('Failed to delete blog. Please try again.');
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete blog. Please try again.',
+      });
     } finally {
       setIsDeleting(false);
       setShowConfirmation(false);
@@ -38,44 +52,48 @@ export default function DeleteBlogButton({ blogId }: DeleteBlogButtonProps) {
 
   return (
     <>
-      <button
-        onClick={() => setShowConfirmation(true)}
-        className="text-red-600 hover:text-red-900"
+      <Button
+        variant="ghost"
+        size="sm"
+        icon={FiTrash2}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowConfirmation(true);
+        }}
+        className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
         aria-label="Delete blog"
-      >
-        <FiTrash size={18} />
-      </button>
+      />
 
       {/* Confirmation Modal */}
-      {showConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Confirm Deletion
-            </h3>
-            <p className="text-gray-500 mb-6">
-              Are you sure you want to delete this blog post? This action cannot
-              be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowConfirmation(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
+      <Modal
+        isOpen={showConfirmation}
+        onClose={() => !isDeleting && setShowConfirmation(false)}
+        title="Confirm Deletion"
+        size="sm"
+        footer={
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmation(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDelete}
+              isLoading={isDeleting}
+            >
+              Delete
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p className="text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete this blog post? This action cannot be
+          undone.
+        </p>
+      </Modal>
     </>
   );
 }
