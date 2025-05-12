@@ -1,9 +1,14 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { FiPlusCircle, FiEdit, FiTrash } from 'react-icons/fi';
+import { FiEdit, FiEye } from 'react-icons/fi';
+import PageTitle from '@/components/admin/PageTitle';
+import Button from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import DeleteBlogButton from '@/components/admin/blogs/DeleteBlogButton';
+import BlogActions from '@/components/admin/blogs/BlogActions';
+import EmptyState from '@/components/admin/blogs/EmptyState';
 
 async function getBlogs() {
   const blogs = await prisma.blog.findMany({
@@ -18,133 +23,122 @@ export default async function BlogsPage() {
   const blogs = await getBlogs();
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Blogs</h1>
-        <Link
-          href="/dashboard/blogs/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          <FiPlusCircle size={20} />
-          <span>Add Blog</span>
-        </Link>
-      </div>
+    <>
+      <PageTitle
+        title="Blogs"
+        description="Manage your blog posts"
+        breadcrumbs={[{ label: 'Blogs', href: '/dashboard/blogs' }]}
+        actions={<BlogActions />}
+      />
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Blog
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Category
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Date
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {blogs.length > 0 ? (
-                blogs.map((blog) => (
-                  <tr key={blog.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {blog.featuredImage ? (
-                          <div className="flex-shrink-0 h-10 w-10 relative">
-                            <Image
-                              src={blog.featuredImage}
-                              alt={blog.title}
-                              fill
-                              className="rounded-md object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">
-                              No img
-                            </span>
-                          </div>
-                        )}
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {blog.title}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {blog.slug}
+      <Card className="mt-6">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Blog
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Category
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Date
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Status
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {blogs.length > 0 ? (
+                  blogs.map((blog) => (
+                    <tr
+                      key={blog.id}
+                      className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {blog.featuredImage ? (
+                            <div className="flex-shrink-0 h-10 w-10 relative">
+                              <Image
+                                src={blog.featuredImage}
+                                alt={blog.title}
+                                fill
+                                className="rounded-md object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex-shrink-0 h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
+                              <span className="text-gray-500 dark:text-gray-400 text-xs">
+                                No img
+                              </span>
+                            </div>
+                          )}
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {blog.title}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {blog.slug}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {blog.category?.name || 'Uncategorized'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(blog.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          blog.published
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {blog.published ? 'Published' : 'Draft'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                        <Link
-                          href={`/dashboard/blogs/${blog.id}`}
-                          className="text-blue-600 hover:text-blue-900"
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                          {blog.category?.name || 'Uncategorized'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {formatDate(blog.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            blog.published
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                          }`}
                         >
-                          <FiEdit size={18} />
-                        </Link>
-                        <DeleteBlogButton blogId={blog.id} />
-                      </div>
+                          {blog.published ? 'Published' : 'Draft'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={FiEye}
+                            href={`/blog/${blog.slug}`}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={FiEdit}
+                            href={`/dashboard/blogs/${blog.id}`}
+                          />
+                          <DeleteBlogButton blogId={blog.id} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center">
+                      <EmptyState />
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No blogs found. Create your first blog post!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }

@@ -2,6 +2,9 @@ import { prisma } from '@/lib/db';
 import DashboardStats from '@/components/admin/DashboardStats';
 import RecentItems from '@/components/admin/RecentItems';
 import DashboardCharts from '@/components/admin/DashboardCharts';
+import PageTitle from '@/components/admin/PageTitle';
+import { Card, CardContent } from '@/components/ui/Card';
+import DashboardActions from '@/components/admin/DashboardActions';
 
 async function getDashboardData() {
   // Get counts
@@ -67,10 +70,12 @@ async function getDashboardData() {
     },
   });
 
-  const productSalesData = topSellingProducts.map((product) => ({
-    product: product.name,
-    sales: product.sales.reduce((total, sale) => total + sale.quantity, 0),
-  })).sort((a, b) => b.sales - a.sales);
+  const productSalesData = topSellingProducts
+    .map((product) => ({
+      product: product.name,
+      sales: product.sales.reduce((total, sale) => total + sale.quantity, 0),
+    }))
+    .sort((a, b) => b.sales - a.sales);
 
   // Get most liked projects
   const mostLikedProjects = await prisma.project.findMany({
@@ -104,24 +109,32 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-      
-      <DashboardStats 
+      <PageTitle
+        title="Dashboard Overview"
+        description="Welcome to your admin dashboard. Here's an overview of your website's performance and recent activity."
+        actions={<DashboardActions />}
+      />
+
+      <DashboardStats
         totalBlogs={dashboardData.totalBlogs}
         totalProjects={dashboardData.totalProjects}
         totalProducts={dashboardData.totalProducts}
         totalGalleryItems={dashboardData.totalGalleryItems}
         totalContacts={dashboardData.totalContacts}
       />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardCharts 
-          blogsByCategory={dashboardData.blogsByCategory}
-          topSellingProducts={dashboardData.topSellingProducts}
-          mostLikedProjects={dashboardData.mostLikedProjects}
-        />
-        
-        <RecentItems 
+        <Card>
+          <CardContent className="p-0">
+            <DashboardCharts
+              blogsByCategory={dashboardData.blogsByCategory}
+              topSellingProducts={dashboardData.topSellingProducts}
+              mostLikedProjects={dashboardData.mostLikedProjects}
+            />
+          </CardContent>
+        </Card>
+
+        <RecentItems
           recentBlogs={dashboardData.recentBlogs}
           recentProjects={dashboardData.recentProjects}
           recentProducts={dashboardData.recentProducts}
