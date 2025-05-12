@@ -3,60 +3,60 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Briefcase, 
-  ShoppingBag, 
-  Image, 
-  MessageSquare, 
-  Settings, 
-  History,
-  Menu,
-  X
-} from 'lucide-react';
+import {
+  FiLayout,
+  FiFileText,
+  FiBriefcase,
+  FiShoppingBag,
+  FiImage,
+  FiMessageSquare,
+  FiSettings,
+  FiClock,
+  FiMenu,
+  FiX,
+} from 'react-icons/fi';
 import { useState } from 'react';
 
 const navItems = [
   {
     title: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutDashboard,
+    icon: FiLayout,
   },
   {
     title: 'Blogs',
     href: '/dashboard/blogs',
-    icon: FileText,
+    icon: FiFileText,
   },
   {
     title: 'Projects',
     href: '/dashboard/projects',
-    icon: Briefcase,
+    icon: FiBriefcase,
   },
   {
     title: 'Shop',
     href: '/dashboard/shop',
-    icon: ShoppingBag,
+    icon: FiShoppingBag,
   },
   {
     title: 'Gallery',
     href: '/dashboard/gallery',
-    icon: Image,
+    icon: FiImage,
   },
   {
     title: 'Contacts',
     href: '/dashboard/contacts',
-    icon: MessageSquare,
+    icon: FiMessageSquare,
   },
   {
     title: 'Settings',
     href: '/dashboard/settings',
-    icon: Settings,
+    icon: FiSettings,
   },
   {
     title: 'Audit Trail',
     href: '/dashboard/audit-trail',
-    icon: History,
+    icon: FiClock,
   },
 ];
 
@@ -71,19 +71,21 @@ export default function AdminSidebar() {
         className="fixed top-4 left-4 z-50 md:hidden bg-primary text-white p-2 rounded-md"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
       </button>
 
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-center h-16 border-b">
-            <h1 className="text-xl font-bold text-primary">DigitalSpeed Admin</h1>
+            <h1 className="text-xl font-bold text-primary">
+              DigitalSpeed Admin
+            </h1>
           </div>
           <nav className="flex-1 overflow-y-auto py-4">
             <ul className="space-y-1 px-2">
@@ -92,8 +94,9 @@ export default function AdminSidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center px-4 py-3 text-gray-700 rounded-md hover:bg-gray-100 transition-colors",
-                      pathname === item.href && "bg-primary/10 text-primary font-medium"
+                      'flex items-center px-4 py-3 text-gray-700 rounded-md hover:bg-gray-100 transition-colors',
+                      pathname === item.href &&
+                        'bg-primary/10 text-primary font-medium'
                     )}
                     onClick={() => setIsOpen(false)}
                   >
@@ -114,7 +117,7 @@ export default function AdminSidebar() {
 
       {/* Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={() => setIsOpen(false)}
         />
