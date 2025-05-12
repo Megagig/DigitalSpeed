@@ -8,9 +8,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Category, Tag, Blog } from '@prisma/client';
 import { slugify } from '@/lib/utils';
 import { uploadImage } from '@/lib/cloudinary';
-import { FiArrowLeft, FiSave, FiImage } from 'react-icons/fi';
+import {
+  FiArrowLeft,
+  FiSave,
+  FiImage,
+  FiCode,
+  FiLink,
+  FiList,
+  FiBold,
+  FiItalic,
+} from 'react-icons/fi';
 import Link from 'next/link';
 import ImageUpload from '@/components/ui/ImageUpload';
+import MarkdownEditor from '@/components/ui/MarkdownEditor';
 
 const blogSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -228,14 +238,17 @@ export default function BlogForm({ blog, categories, tags }: BlogFormProps) {
             htmlFor="content"
             className="block text-sm font-medium text-gray-700"
           >
-            Content *
+            Content *{' '}
+            <span className="text-xs text-gray-500">(Supports Markdown)</span>
           </label>
-          <textarea
-            id="content"
-            rows={10}
-            {...register('content')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          ></textarea>
+          <div className="mt-1">
+            <MarkdownEditor
+              value={watch('content') || ''}
+              onChange={(value) => setValue('content', value)}
+              rows={15}
+              placeholder="Write your blog content here... Supports Markdown including code blocks."
+            />
+          </div>
           {errors.content && (
             <p className="mt-1 text-sm text-red-600">
               {errors.content.message}

@@ -2,13 +2,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { FiEdit, FiEye } from 'react-icons/fi';
 import PageTitle from '@/components/admin/PageTitle';
-import Button from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import DeleteBlogButton from '@/components/admin/blogs/DeleteBlogButton';
 import BlogActions from '@/components/admin/blogs/BlogActions';
 import EmptyState from '@/components/admin/blogs/EmptyState';
+import BlogActionButtons from '@/components/admin/blogs/BlogActionButtons';
 
 async function getBlogs() {
   const blogs = await prisma.blog.findMany({
@@ -109,21 +107,10 @@ export default async function BlogsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={FiEye}
-                            href={`/blog/${blog.slug}`}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={FiEdit}
-                            href={`/dashboard/blogs/${blog.id}`}
-                          />
-                          <DeleteBlogButton blogId={blog.id} />
-                        </div>
+                        <BlogActionButtons
+                          blogId={blog.id}
+                          blogSlug={blog.slug}
+                        />
                       </td>
                     </tr>
                   ))

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   FaMapMarkerAlt,
@@ -13,7 +13,27 @@ import {
   FaFacebook,
 } from 'react-icons/fa';
 
-const ContactPage = () => {
+// Loading component for Suspense
+const ContactLoading = () => (
+  <div className="pt-32 pb-16">
+    <div className="container mx-auto px-4">
+      <div className="text-center mb-12 animate-pulse">
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mx-auto mb-4"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mx-auto"></div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-1">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg h-96 animate-pulse"></div>
+        </div>
+        <div className="lg:col-span-2">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg h-96 animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ContactForm = () => {
   const searchParams = useSearchParams();
   const isHireMode = searchParams.get('hire') === 'true';
 
@@ -364,6 +384,14 @@ const ContactPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const ContactPage = () => {
+  return (
+    <Suspense fallback={<ContactLoading />}>
+      <ContactForm />
+    </Suspense>
   );
 };
 

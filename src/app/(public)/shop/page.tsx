@@ -11,128 +11,6 @@ import {
   FaRegStar,
 } from 'react-icons/fa';
 
-// Sample product data (in a real app, this would come from your database)
-const allProducts = [
-  {
-    id: 1,
-    name: 'Premium WordPress Theme',
-    slug: 'premium-wordpress-theme',
-    description:
-      'A responsive and customizable WordPress theme for businesses and portfolios.',
-    price: 59.99,
-    salePrice: 49.99,
-    images: ['/images/placeholders/product-1.jpg'],
-    category: 'Themes',
-    rating: 4.5,
-    reviews: 28,
-    featured: true,
-  },
-  {
-    id: 2,
-    name: 'React Component Library',
-    slug: 'react-component-library',
-    description:
-      'A collection of reusable React components to speed up your development process.',
-    price: 39.99,
-    salePrice: null,
-    images: ['/images/placeholders/product-2.jpg'],
-    category: 'Components',
-    rating: 5,
-    reviews: 42,
-    featured: true,
-  },
-  {
-    id: 3,
-    name: 'E-commerce Starter Kit',
-    slug: 'ecommerce-starter-kit',
-    description:
-      'Everything you need to start your online store with Next.js and Stripe integration.',
-    price: 79.99,
-    salePrice: 69.99,
-    images: ['/images/placeholders/product-3.jpg'],
-    category: 'Templates',
-    rating: 4.8,
-    reviews: 35,
-    featured: true,
-  },
-  {
-    id: 4,
-    name: 'Admin Dashboard Template',
-    slug: 'admin-dashboard-template',
-    description:
-      'A modern admin dashboard template with dark mode support and responsive design.',
-    price: 49.99,
-    salePrice: null,
-    images: ['/images/placeholders/product-4.jpg'],
-    category: 'Templates',
-    rating: 4.2,
-    reviews: 19,
-    featured: false,
-  },
-  {
-    id: 5,
-    name: 'UI Icon Pack',
-    slug: 'ui-icon-pack',
-    description:
-      'A comprehensive pack of 500+ SVG icons for your web and mobile applications.',
-    price: 24.99,
-    salePrice: 19.99,
-    images: ['/images/placeholders/product-5.jpg'],
-    category: 'Graphics',
-    rating: 4.7,
-    reviews: 53,
-    featured: false,
-  },
-  {
-    id: 6,
-    name: 'Landing Page Template',
-    slug: 'landing-page-template',
-    description:
-      'A high-converting landing page template for SaaS and digital products.',
-    price: 29.99,
-    salePrice: null,
-    images: ['/images/placeholders/product-6.jpg'],
-    category: 'Templates',
-    rating: 4.4,
-    reviews: 31,
-    featured: false,
-  },
-  {
-    id: 7,
-    name: 'JavaScript Animations Library',
-    slug: 'javascript-animations-library',
-    description:
-      'A lightweight library for creating smooth and interactive animations on your website.',
-    price: 34.99,
-    salePrice: 29.99,
-    images: ['/images/placeholders/product-7.jpg'],
-    category: 'Components',
-    rating: 4.6,
-    reviews: 24,
-    featured: false,
-  },
-  {
-    id: 8,
-    name: 'Portfolio Website Template',
-    slug: 'portfolio-website-template',
-    description:
-      'A clean and modern portfolio template for designers and developers.',
-    price: 44.99,
-    salePrice: null,
-    images: ['/images/placeholders/product-8.jpg'],
-    category: 'Templates',
-    rating: 4.3,
-    reviews: 17,
-    featured: false,
-  },
-];
-
-// Get all unique categories
-const allCategories = [
-  'All',
-  ...new Set(allProducts.map((product) => product.category)),
-];
-
 // Rating component
 const RatingStars = ({ rating }: { rating: number }) => {
   const stars = [];
@@ -151,10 +29,45 @@ const RatingStars = ({ rating }: { rating: number }) => {
 };
 
 const ShopPage = () => {
-  const [products, setProducts] = useState(allProducts);
+  const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+
+        if (data) {
+          setAllProducts(data);
+          setProducts(data);
+
+          // Extract categories
+          const uniqueCategories = new Set<string>();
+          data.forEach((product: any) => {
+            if (product.category) {
+              uniqueCategories.add(product.category);
+            }
+          });
+
+          setCategories(['All', ...Array.from(uniqueCategories)]);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Filter and sort products
   useEffect(() => {
@@ -186,23 +99,25 @@ const ShopPage = () => {
         break;
       case 'price-low':
         filtered = [...filtered].sort(
-          (a, b) => (a.salePrice || a.price) - (b.salePrice || b.price)
+          (a, b) => parseFloat(a.price) - parseFloat(b.price)
         );
         break;
       case 'price-high':
         filtered = [...filtered].sort(
-          (a, b) => (b.salePrice || b.price) - (a.salePrice || a.price)
+          (a, b) => parseFloat(b.price) - parseFloat(a.price)
         );
         break;
       case 'rating':
-        filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+        filtered = [...filtered].sort(
+          (a, b) => (b.reviews?.length || 0) - (a.reviews?.length || 0)
+        );
         break;
       default:
         break;
     }
 
     setProducts(filtered);
-  }, [activeCategory, searchQuery, sortBy]);
+  }, [activeCategory, searchQuery, sortBy, allProducts]);
 
   return (
     <div className="pt-32 pb-16">
@@ -236,7 +151,7 @@ const ShopPage = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Category Filter */}
               <div className="flex flex-wrap gap-3">
-                {allCategories.map((category, index) => (
+                {categories.map((category, index) => (
                   <button
                     key={index}
                     onClick={() => setActiveCategory(category)}
@@ -267,21 +182,28 @@ const ShopPage = () => {
         </div>
 
         {/* Products Grid */}
-        {products.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          </div>
+        ) : products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {products.map((product) => (
               <Link href={`/shop/${product.slug}`} key={product.id}>
                 <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow h-full flex flex-col">
                   <div className="relative h-64 w-full">
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                    {product.salePrice && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-medium">
-                        Sale
+                    {product.images && product.images.length > 0 ? (
+                      <Image
+                        src={product.images[0].url}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
+                        <span className="text-gray-500 dark:text-gray-400">
+                          No image
+                        </span>
                       </div>
                     )}
                   </div>
@@ -297,33 +219,30 @@ const ShopPage = () => {
 
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <RatingStars rating={product.rating} />
+                        <RatingStars
+                          rating={
+                            product.reviews?.length
+                              ? Math.min(5, product.reviews.length / 2)
+                              : 0
+                          }
+                        />
                         <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-                          ({product.reviews})
+                          ({product.reviews?.length || 0})
                         </span>
                       </div>
 
-                      <span className="inline-block px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full text-xs">
-                        {product.category}
-                      </span>
+                      {product.category && (
+                        <span className="inline-block px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full text-xs">
+                          {product.category}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        {product.salePrice ? (
-                          <div className="flex items-center">
-                            <span className="text-gray-500 dark:text-gray-400 line-through text-sm mr-2">
-                              ${product.price.toFixed(2)}
-                            </span>
-                            <span className="text-purple-600 dark:text-purple-400 font-semibold">
-                              ${product.salePrice.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-purple-600 dark:text-purple-400 font-semibold">
-                            ${product.price.toFixed(2)}
-                          </span>
-                        )}
+                        <span className="text-purple-600 dark:text-purple-400 font-semibold">
+                          ${parseFloat(product.price).toFixed(2)}
+                        </span>
                       </div>
 
                       <button className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full transition-colors">

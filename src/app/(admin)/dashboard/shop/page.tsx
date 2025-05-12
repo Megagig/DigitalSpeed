@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { FiPlus, FiEdit2, FiEye } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
-import DeleteProductButton from '@/components/admin/shop/DeleteProductButton';
 import CloudinaryImage from '@/components/ui/CloudinaryImage';
+import ProductActionButtons from '@/components/admin/shop/ProductActionButtons';
 
 export default async function ShopPage() {
   const products = await prisma.product.findMany({
@@ -70,7 +70,10 @@ export default async function ShopPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     No products found. Create your first product!
                   </td>
                 </tr>
@@ -90,18 +93,26 @@ export default async function ShopPage() {
                             />
                           ) : (
                             <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
-                              <span className="text-xs text-gray-500">No img</span>
+                              <span className="text-xs text-gray-500">
+                                No img
+                              </span>
                             </div>
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500">{product.slug}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {product.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {product.slug}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                      <div className="text-sm text-gray-900">
+                        ${product.price.toFixed(2)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -115,27 +126,15 @@ export default async function ShopPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDistanceToNow(product.createdAt, { addSuffix: true })}
+                      {formatDistanceToNow(product.createdAt, {
+                        addSuffix: true,
+                      })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-3">
-                        <Link
-                          href={`/shop/${product.slug}`}
-                          className="text-blue-600 hover:text-blue-800"
-                          title="View product"
-                          target="_blank"
-                        >
-                          <FiEye size={18} />
-                        </Link>
-                        <Link
-                          href={`/dashboard/shop/${product.id}`}
-                          className="text-indigo-600 hover:text-indigo-800"
-                          title="Edit product"
-                        >
-                          <FiEdit2 size={18} />
-                        </Link>
-                        <DeleteProductButton productId={product.id} />
-                      </div>
+                      <ProductActionButtons
+                        productId={product.id}
+                        productSlug={product.slug}
+                      />
                     </td>
                   </tr>
                 ))

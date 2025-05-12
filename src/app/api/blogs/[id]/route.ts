@@ -16,7 +16,8 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     // Delete the blog
     await prisma.blog.delete({
@@ -47,7 +48,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     const blog = await prisma.blog.findUnique({
       where: { id },
@@ -88,7 +90,8 @@ export async function PATCH(
       );
     }
 
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
     const body = await request.json();
 
     // Update the blog

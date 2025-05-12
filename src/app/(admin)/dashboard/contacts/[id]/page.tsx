@@ -2,20 +2,15 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import { formatDateTime } from '@/lib/utils';
-import {
-  FiArrowLeft,
-  FiMail,
-  FiPhone,
-  FiCalendar,
-  FiBriefcase,
-} from 'react-icons/fi';
-import DeleteContactButton from '@/components/admin/contacts/DeleteContactButton';
+import { FiMail, FiPhone, FiCalendar, FiBriefcase } from 'react-icons/fi';
+import ContactDetailActions from '@/components/admin/contacts/ContactDetailActions';
 
-interface ContactDetailPageProps {
+type ContactDetailPageProps = {
   params: {
     id: string;
   };
-}
+  searchParams?: Record<string, string | string[] | undefined>;
+};
 
 async function getContact(id: string) {
   const contact = await prisma.contact.findUnique({
@@ -49,16 +44,7 @@ export default async function ContactDetailPage({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Contact Details</h1>
-        <div className="flex items-center space-x-3">
-          <Link
-            href="/dashboard/contacts"
-            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            <FiArrowLeft size={16} className="mr-2" />
-            Back to Contacts
-          </Link>
-          <DeleteContactButton contactId={contact.id} />
-        </div>
+        <ContactDetailActions contactId={contact.id} />
       </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">

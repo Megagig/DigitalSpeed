@@ -4,75 +4,57 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaSearch } from 'react-icons/fa';
-
-// Sample project data (in a real app, this would come from your database)
-const projects = [
-  {
-    id: 1,
-    title: 'E-commerce Platform',
-    slug: 'e-commerce-platform',
-    category: 'website',
-    image: '/images/placeholders/project-1-1.jpg',
-    description:
-      'A full-featured e-commerce platform built with Next.js and PostgreSQL.',
-  },
-  {
-    id: 2,
-    title: 'Fitness Tracker App',
-    slug: 'fitness-tracker-app',
-    category: 'app',
-    image: '/images/placeholders/project-2-1.jpg',
-    description: 'A mobile application for tracking workouts and nutrition.',
-  },
-  {
-    id: 3,
-    title: 'Digital Marketing Campaign',
-    slug: 'digital-marketing-campaign',
-    category: 'digital',
-    image: '/images/placeholders/project-3-1.jpg',
-    description:
-      'A comprehensive digital marketing campaign for a local business.',
-  },
-  {
-    id: 4,
-    title: 'Blog Content Strategy',
-    slug: 'blog-content-strategy',
-    category: 'content',
-    image: '/images/placeholders/project-4-1.jpg',
-    description: 'Content strategy and creation for a tech blog.',
-  },
-  {
-    id: 5,
-    title: 'Portfolio Website',
-    slug: 'portfolio-website',
-    category: 'website',
-    image: '/images/placeholders/project-5-1.jpg',
-    description: 'A responsive portfolio website for a photographer.',
-  },
-  {
-    id: 6,
-    title: 'Task Management App',
-    slug: 'task-management-app',
-    category: 'app',
-    image: '/images/placeholders/project-6-1.jpg',
-    description:
-      'A task management application with team collaboration features.',
-  },
-];
-
-// Filter categories
-const categories = [
-  { id: 'all', name: 'All' },
-  { id: 'website', name: 'Website' },
-  { id: 'app', name: 'Apps' },
-  { id: 'digital', name: 'Digital' },
-  { id: 'content', name: 'Content' },
-];
+import { ProjectWithImages } from '@/types';
 
 const ProjectsPage = () => {
-  const [filteredProjects, setFilteredProjects] = useState(projects);
+  const [projects, setProjects] = useState<ProjectWithImages[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<ProjectWithImages[]>(
+    []
+  );
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All' }]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch projects from API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+
+        if (data.success && data.projects) {
+          setProjects(data.projects);
+          setFilteredProjects(data.projects);
+
+          // Extract categories from projects
+          const uniqueCategories = new Set<string>();
+          data.projects.forEach((project: ProjectWithImages) => {
+            if (project.category) {
+              uniqueCategories.add(project.category);
+            }
+          });
+
+          const categoryOptions = [
+            { id: 'all', name: 'All' },
+            ...Array.from(uniqueCategories).map((category) => ({
+              id: category,
+              name: category.charAt(0).toUpperCase() + category.slice(1),
+            })),
+          ];
+
+          setCategories(categoryOptions);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   // Filter projects based on category and search query
   useEffect(() => {
@@ -96,7 +78,7 @@ const ProjectsPage = () => {
     }
 
     setFilteredProjects(filtered);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, projects]);
 
   return (
     <div className="pt-32 pb-16">
@@ -146,18 +128,30 @@ const ProjectsPage = () => {
         </div>
 
         {/* Projects Grid */}
-        {filteredProjects.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          </div>
+        ) : filteredProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project) => (
               <Link href={`/projects/${project.slug}`} key={project.id}>
                 <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow h-full flex flex-col">
                   <div className="relative h-56 w-full">
-                    <Image
-                      src={project.image}
-                      alt={project.title}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                    />
+                    {project.images && project.images.length > 0 ? (
+                      <Image
+                        src={project.images[0].url}
+                        alt={project.title}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
+                        <span className="text-gray-500 dark:text-gray-400">
+                          No image
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="p-6 flex-grow flex flex-col">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -167,12 +161,15 @@ const ProjectsPage = () => {
                       {project.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="inline-block px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full">
-                        {
-                          categories.find((cat) => cat.id === project.category)
-                            ?.name
-                        }
-                      </span>
+                      {project.category && (
+                        <span className="inline-block px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full">
+                          {
+                            categories.find(
+                              (cat) => cat.id === project.category
+                            )?.name
+                          }
+                        </span>
+                      )}
                       <span className="text-purple-600 dark:text-purple-400 font-medium">
                         View Details →
                       </span>

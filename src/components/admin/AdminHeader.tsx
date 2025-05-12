@@ -11,11 +11,10 @@ import {
   FiUser,
   FiLogOut,
   FiSettings,
-  FiSun,
-  FiMoon,
   FiSearch,
   FiChevronRight,
 } from 'react-icons/fi';
+import { ThemeToggle } from '@/components/ThemeProvider';
 import { SessionUser } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -134,19 +133,10 @@ export default function AdminHeader({ user }: AdminHeaderProps) {
         </button>
 
         {/* Theme toggle */}
-        <button
-          className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          onClick={() =>
-            mounted && setTheme(theme === 'dark' ? 'light' : 'dark')
-          }
-          aria-label="Toggle theme"
-        >
-          {mounted && theme === 'dark' ? (
-            <FiSun className="w-5 h-5" />
-          ) : (
-            <FiMoon className="w-5 h-5" />
-          )}
-        </button>
+        <ThemeToggle
+          className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          size="md"
+        />
 
         {/* Notifications */}
         <div className="relative notifications-dropdown">

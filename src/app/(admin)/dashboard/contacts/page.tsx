@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { FiEye, FiTrash } from 'react-icons/fi';
-import DeleteContactButton from '@/components/admin/contacts/DeleteContactButton';
+import ContactActionButtons from '@/components/admin/contacts/ContactActionButtons';
 
 async function getContacts() {
   const contacts = await prisma.contact.findMany({
@@ -117,15 +116,7 @@ export default async function ContactsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                        <Link
-                          href={`/dashboard/contacts/${contact.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <FiEye size={18} />
-                        </Link>
-                        <DeleteContactButton contactId={contact.id} />
-                      </div>
+                      <ContactActionButtons contactId={contact.id} />
                     </td>
                   </tr>
                 ))

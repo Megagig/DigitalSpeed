@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/db';
-import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
 import CloudinaryImage from '@/components/ui/CloudinaryImage';
 import GalleryUploadForm from '@/components/admin/gallery/GalleryUploadForm';
+import GalleryActionButtons from '@/components/admin/gallery/GalleryActionButtons';
 
 export default async function GalleryPage() {
   const galleryItems = await prisma.gallery.findMany({
@@ -24,9 +24,11 @@ export default async function GalleryPage() {
 
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-medium mb-4">Gallery Images</h2>
-        
+
         {galleryItems.length === 0 ? (
-          <p className="text-gray-500">No gallery images found. Upload your first image!</p>
+          <p className="text-gray-500">
+            No gallery images found. Upload your first image!
+          </p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {galleryItems.map((item) => (
@@ -41,26 +43,17 @@ export default async function GalleryPage() {
                   />
                 </div>
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="flex space-x-2">
-                    <button
-                      className="p-2 bg-white rounded-full text-gray-700 hover:text-blue-600"
-                      title="Edit details"
-                    >
-                      <FiEdit2 size={18} />
-                    </button>
-                    <button
-                      className="p-2 bg-white rounded-full text-gray-700 hover:text-red-600"
-                      title="Delete image"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
-                  </div>
+                  <GalleryActionButtons galleryItemId={item.id} />
                 </div>
                 {item.title && (
                   <div className="mt-2">
-                    <h3 className="text-sm font-medium text-gray-900">{item.title}</h3>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      {item.title}
+                    </h3>
                     {item.description && (
-                      <p className="text-xs text-gray-500 truncate">{item.description}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {item.description}
+                      </p>
                     )}
                   </div>
                 )}
