@@ -2,8 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { FiPlusCircle, FiEdit, FiTrash } from 'react-icons/fi';
-import DeleteProjectButton from '@/components/admin/projects/DeleteProjectButton';
+import { FiPlusCircle } from 'react-icons/fi';
+import ProjectActionButtons from '@/components/admin/projects/ProjectActionButtons';
 
 async function getProjects() {
   const projects = await prisma.project.findMany({
@@ -117,15 +117,7 @@ export default async function ProjectsPage() {
                       {project.likes}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                        <Link
-                          href={`/dashboard/projects/${project.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <FiEdit size={18} />
-                        </Link>
-                        <DeleteProjectButton projectId={project.id} />
-                      </div>
+                      <ProjectActionButtons projectId={project.id} />
                     </td>
                   </tr>
                 ))

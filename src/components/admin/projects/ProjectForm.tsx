@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Project, ProjectImage } from '@prisma/client';
 import { slugify } from '@/lib/utils';
-import { ArrowLeft, Save } from 'react-icons/fi';
+import { FiArrowLeft, FiSave } from 'react-icons/fi';
 import Link from 'next/link';
 import MultiImageUpload from '@/components/ui/MultiImageUpload';
 
@@ -207,7 +207,7 @@ export default function ProjectForm({ project }: ProjectFormProps) {
             href="/dashboard/projects"
             className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            <ArrowLeft size={16} className="mr-2" />
+            <FiArrowLeft size={16} className="mr-2" />
             Back to Projects
           </Link>
           <button
@@ -215,7 +215,7 @@ export default function ProjectForm({ project }: ProjectFormProps) {
             disabled={isSubmitting || isUploading}
             className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save size={16} className="mr-2" />
+            <FiSave size={16} className="mr-2" />
             {isSubmitting ? 'Saving...' : 'Save Project'}
           </button>
         </div>
