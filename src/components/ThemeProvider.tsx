@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, ReactNode } from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes';
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
@@ -146,5 +146,5 @@ function MoonIcon({ className = '' }: { className?: string }) {
   );
 }
 
-// Hook to use theme
-export { useTheme } from 'next-themes';
+// We already imported useTheme at the top, so no need to re-export it
+// export { useTheme } from 'next-themes';
