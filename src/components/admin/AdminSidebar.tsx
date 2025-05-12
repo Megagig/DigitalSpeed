@@ -58,6 +58,10 @@ const navItems: NavItem[] = [
         title: 'Tags',
         href: '/dashboard/blogs/tags',
       },
+      {
+        title: 'Comments',
+        href: '/dashboard/comments',
+      },
     ],
   },
   {

@@ -1,76 +1,87 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// Sample project data
-const projects = [
-  {
-    id: 1,
-    title: 'E-commerce Platform',
-    slug: 'e-commerce-platform',
-    category: 'website',
-    image: '/project-placeholder-1.jpg',
-    description: 'A full-featured e-commerce platform built with Next.js and PostgreSQL.',
-  },
-  {
-    id: 2,
-    title: 'Fitness Tracker App',
-    slug: 'fitness-tracker-app',
-    category: 'app',
-    image: '/project-placeholder-2.jpg',
-    description: 'A mobile application for tracking workouts and nutrition.',
-  },
-  {
-    id: 3,
-    title: 'Digital Marketing Campaign',
-    slug: 'digital-marketing-campaign',
-    category: 'digital',
-    image: '/project-placeholder-3.jpg',
-    description: 'A comprehensive digital marketing campaign for a local business.',
-  },
-  {
-    id: 4,
-    title: 'Blog Content Strategy',
-    slug: 'blog-content-strategy',
-    category: 'content',
-    image: '/project-placeholder-4.jpg',
-    description: 'Content strategy and creation for a tech blog.',
-  },
-  {
-    id: 5,
-    title: 'Portfolio Website',
-    slug: 'portfolio-website',
-    category: 'website',
-    image: '/project-placeholder-5.jpg',
-    description: 'A responsive portfolio website for a photographer.',
-  },
-  {
-    id: 6,
-    title: 'Task Management App',
-    slug: 'task-management-app',
-    category: 'app',
-    image: '/project-placeholder-6.jpg',
-    description: 'A task management application with team collaboration features.',
-  },
-];
-
-// Filter categories
-const categories = [
-  { id: 'all', name: 'All' },
-  { id: 'website', name: 'Website' },
-  { id: 'app', name: 'Apps' },
-  { id: 'digital', name: 'Digital' },
-  { id: 'content', name: 'Content' },
-];
+interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  likes: number;
+  images: {
+    id: string;
+    url: string;
+  }[];
+}
 
 const RecentWorkSection = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All' }]);
 
-  const filteredProjects = activeCategory === 'all'
-    ? projects
-    : projects.filter(project => project.category === activeCategory);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+
+        if (data.success && data.projects) {
+          // Get only published projects
+          const publishedProjects = data.projects
+            .filter((project: Project) => project.published)
+            .sort(
+              (a: Project, b: Project) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            );
+
+          setProjects(publishedProjects);
+
+          // Extract unique categories from projects
+          const uniqueCategories = new Set<string>();
+          publishedProjects.forEach((project: Project) => {
+            // This is a simplified approach - in a real app, you might have a category field
+            // For now, we'll just use the first word of the title as a mock category
+            const mockCategory = project.title.split(' ')[0].toLowerCase();
+            uniqueCategories.add(mockCategory);
+          });
+
+          // Create categories array with 'All' as the first option
+          const categoryArray = [{ id: 'all', name: 'All' }];
+          uniqueCategories.forEach((category) => {
+            categoryArray.push({
+              id: category,
+              name: category.charAt(0).toUpperCase() + category.slice(1),
+            });
+          });
+
+          setCategories(categoryArray);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  // Filter projects based on active category
+  const filteredProjects =
+    activeCategory === 'all'
+      ? projects
+      : projects.filter((project) => {
+          // This is a simplified approach - in a real app, you'd filter by actual category
+          const mockCategory = project.title.split(' ')[0].toLowerCase();
+          return mockCategory === activeCategory;
+        });
 
   return (
     <section id="projects" className="py-16">
@@ -80,9 +91,10 @@ const RecentWorkSection = () => {
             My Recent Work
           </h2>
           <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
-            Here are some of my recent projects. Click on any project to see more details.
+            Here are some of my recent projects. Click on any project to see
+            more details.
           </p>
-          
+
           {/* Filter buttons */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             {categories.map((category) => (
@@ -100,35 +112,58 @@ const RecentWorkSection = () => {
             ))}
           </div>
         </div>
-        
+
         {/* Projects grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <Link href={`/projects/${project.slug}`} key={project.id}>
-              <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow group">
-                <div className="relative h-64 w-full">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform group-hover:scale-105"
-                  />
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          </div>
+        ) : filteredProjects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProjects.map((project) => (
+              <Link href={`/projects/${project.slug}`} key={project.id}>
+                <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow group">
+                  <div className="relative h-64 w-full">
+                    {project.images && project.images.length > 0 ? (
+                      <Image
+                        src={project.images[0].url}
+                        alt={project.title}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
+                        <span className="text-gray-500 dark:text-gray-400">
+                          No image
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      {project.title}
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      {project.description}
+                    </p>
+                    <span className="inline-block px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full">
+                      {categories.find(
+                        (cat) =>
+                          cat.id === project.title.split(' ')[0].toLowerCase()
+                      )?.name || 'Project'}
+                    </span>
+                  </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-700 dark:text-gray-300 mb-4">
-                    {project.description}
-                  </p>
-                  <span className="inline-block px-3 py-1 text-sm bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full">
-                    {categories.find(cat => cat.id === project.category)?.name}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-700 dark:text-gray-300">
+              No projects available yet. Check back soon!
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

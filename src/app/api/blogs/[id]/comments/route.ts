@@ -14,9 +14,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Await params before destructuring
+    const { id } = await params;
+
     const comments = await prisma.comment.findMany({
       where: {
-        blogId: params.id,
+        blogId: id,
         isApproved: true,
         parentId: null, // Only get top-level comments
       },
@@ -61,10 +64,7 @@ export async function POST(
     });
 
     if (!blog) {
-      return NextResponse.json(
-        { error: 'Blog not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
 
     // If it's a reply, check if parent comment exists
@@ -88,8 +88,8 @@ export async function POST(
       data: {
         ...validatedData,
         blogId: params.id,
-        // Auto-approve comments for now, in a real app you might want to moderate them
-        isApproved: true,
+        // Comments need to be approved by an admin before they appear
+        isApproved: false,
       },
     });
 

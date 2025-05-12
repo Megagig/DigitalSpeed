@@ -145,7 +145,34 @@ const BlogPostPage = () => {
 
           {/* Blog Content */}
           <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
-            <ReactMarkdown>{post.content}</ReactMarkdown>
+            <ReactMarkdown
+              components={{
+                code({ node, inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <div className="bg-gray-900 rounded-md overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 text-gray-200 text-xs">
+                        <span>{match[1]}</span>
+                      </div>
+                      <pre className="p-4 overflow-x-auto">
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      </pre>
+                    </div>
+                  ) : (
+                    <code
+                      className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm"
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
           </div>
 
           {/* Tags */}

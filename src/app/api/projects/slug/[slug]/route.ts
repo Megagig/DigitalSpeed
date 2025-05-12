@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    // Await params before destructuring
+    const { slug } = await params;
 
     const project = await prisma.project.findUnique({
       where: { slug },

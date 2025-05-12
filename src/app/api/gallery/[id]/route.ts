@@ -14,9 +14,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Await params before destructuring
+    const { id } = await params;
+
     const galleryItem = await prisma.gallery.findUnique({
       where: {
-        id: params.id,
+        id,
       },
     });
 
@@ -44,10 +47,7 @@ export async function PATCH(
   try {
     const user = await getCurrentUser();
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -80,7 +80,9 @@ export async function PATCH(
       data: {
         userId: user.id,
         action: 'UPDATE_GALLERY_ITEM',
-        details: `Updated gallery item${updatedItem.title ? `: ${updatedItem.title}` : ''}`,
+        details: `Updated gallery item${
+          updatedItem.title ? `: ${updatedItem.title}` : ''
+        }`,
       },
     });
 
@@ -107,10 +109,7 @@ export async function DELETE(
   try {
     const user = await getCurrentUser();
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if gallery item exists
@@ -139,7 +138,9 @@ export async function DELETE(
       data: {
         userId: user.id,
         action: 'DELETE_GALLERY_ITEM',
-        details: `Deleted gallery item${galleryItem.title ? `: ${galleryItem.title}` : ''}`,
+        details: `Deleted gallery item${
+          galleryItem.title ? `: ${galleryItem.title}` : ''
+        }`,
       },
     });
 

@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     // Get the current blog to find its category and tags
     const currentBlog = await prisma.blog.findUnique({
@@ -34,11 +35,11 @@ export async function GET(
           {
             tags: {
               some: {
-                id: { in: currentBlog.tags.map(tag => tag.id) }
-              }
-            }
-          }
-        ]
+                id: { in: currentBlog.tags.map((tag) => tag.id) },
+              },
+            },
+          },
+        ],
       },
       include: {
         category: true,

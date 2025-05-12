@@ -17,9 +17,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Await params before destructuring
+    const { id } = await params;
+
     const product = await prisma.product.findUnique({
       where: {
-        id: params.id,
+        id,
       },
       include: {
         images: true,
@@ -27,10 +30,7 @@ export async function GET(
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
     return NextResponse.json(product);
@@ -50,10 +50,7 @@ export async function PATCH(
   try {
     const user = await getCurrentUser();
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -71,20 +68,17 @@ export async function PATCH(
     });
 
     if (!existingProduct) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
     // Check if slug is unique (if changed)
     if (
       validatedData.slug !== existingProduct.slug &&
-      await prisma.product.findUnique({
+      (await prisma.product.findUnique({
         where: {
           slug: validatedData.slug,
         },
-      })
+      }))
     ) {
       return NextResponse.json(
         { error: 'A product with this slug already exists' },
@@ -109,7 +103,7 @@ export async function PATCH(
         data: {
           ...productData,
           images: {
-            create: images?.map(url => ({ url })) || [],
+            create: images?.map((url) => ({ url })) || [],
           },
         },
         include: {
@@ -150,10 +144,7 @@ export async function DELETE(
   try {
     const user = await getCurrentUser();
     if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if product exists
@@ -164,10 +155,7 @@ export async function DELETE(
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
     // Delete product (cascade will delete images)

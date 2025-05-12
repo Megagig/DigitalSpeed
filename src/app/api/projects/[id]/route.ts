@@ -16,7 +16,8 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     // Delete the project (cascade will delete images)
     await prisma.project.delete({
@@ -47,7 +48,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     const project = await prisma.project.findUnique({
       where: { id },

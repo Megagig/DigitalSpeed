@@ -6,16 +6,17 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     // Increment the view count
     const blog = await prisma.blog.update({
       where: { id },
       data: {
         views: {
-          increment: 1
-        }
-      }
+          increment: 1,
+        },
+      },
     });
 
     return NextResponse.json({ success: true, views: blog.views });

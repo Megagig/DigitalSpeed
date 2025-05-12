@@ -56,7 +56,8 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    // Await params before destructuring
+    const { id } = await params;
 
     const contact = await prisma.contact.findUnique({
       where: { id },

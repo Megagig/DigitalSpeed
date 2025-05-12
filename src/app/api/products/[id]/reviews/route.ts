@@ -14,9 +14,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Await params before destructuring
+    const { id } = await params;
+
     const reviews = await prisma.review.findMany({
       where: {
-        productId: params.id,
+        productId: id,
         isApproved: true,
       },
       orderBy: {
@@ -50,10 +53,7 @@ export async function POST(
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
     // Create review
