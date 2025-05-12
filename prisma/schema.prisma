@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  auditTrails   AuditTrail[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Blog related models
+model Blog {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  content     String     @db.Text
+  excerpt     String?    @db.Text
+  featuredImage String?
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  tags        Tag[]
+  views       Int        @default(0)
+  likes       Int        @default(0)
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  blogs       Blog[]
+}
+
+model Tag {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  blogs       Blog[]
+}
+
+// Project related models
+model Project {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  description String     @db.Text
+  images      ProjectImage[]
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  likes       Int        @default(0)
+  contacts    Contact[]
+}
+
+model ProjectImage {
+  id          String     @id @default(cuid())
+  url         String
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// Shop related models
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String     @db.Text
+  price       Decimal    @db.Decimal(10, 2)
+  images      ProductImage[]
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  sales       Sale[]
+}
+
+model ProductImage {
+  id          String     @id @default(cuid())
+  url         String
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Sale {
+  id          String     @id @default(cuid())
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id])
+  quantity    Int
+  totalAmount Decimal    @db.Decimal(10, 2)
+  date        DateTime   @default(now())
+}
+
+// Gallery model
+model Gallery {
+  id          String     @id @default(cuid())
+  title       String?
+  description String?    @db.Text
+  imageUrl    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+// Contact model
+model Contact {
+  id          String     @id @default(cuid())
+  firstName   String
+  lastName    String?
+  email       String
+  phone       String?
+  message     String     @db.Text
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id])
+  createdAt   DateTime   @default(now())
+  isRead      Boolean    @default(false)
+}
+
+// Settings model
+model Setting {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  value       String     @db.Text
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+// Audit Trail model
+model AuditTrail {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  action      String
+  details     String?    @db.Text
+  createdAt   DateTime   @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}

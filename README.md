@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DigitalSpeed - PERN Stack Website
+
+A modern website built with the PERN stack (PostgreSQL, Express, React, Node.js) using Next.js, TypeScript, Prisma ORM, NextAuth, Cloudinary, and Tailwind CSS.
+
+## Features
+
+- **Public-facing Website**: Home, Blog, Projects, Shop, Gallery, and Contact pages
+- **Admin Dashboard**: Manage content with a comprehensive admin panel
+- **Authentication**: Secure login with NextAuth.js
+- **Database**: PostgreSQL with Prisma ORM
+- **Image Storage**: Cloudinary integration for image uploads
+- **Responsive Design**: Mobile, tablet, and desktop friendly with Tailwind CSS
+
+## Admin Dashboard Sections
+
+- **Dashboard Overview**: Statistics and recent activity
+- **Blogs**: Create, edit, and manage blog posts
+- **Projects**: Showcase your work
+- **Shop**: Manage products
+- **Gallery**: Upload and organize images
+- **Contacts**: View and manage contact form submissions
+- **Settings**: Configure website settings
+- **Audit Trail**: Track admin actions
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- PostgreSQL database
+- Cloudinary account
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/yourusername/digitalspeed.git
+cd digitalspeed
+```
+
+2. **Install dependencies**
+
+```bash
+npm install
+```
+
+3. **Set up environment variables**
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/digitalspeed?schema=public"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret-key"
+
+# Cloudinary
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+NEXT_PUBLIC_CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+```
+
+4. **Set up the database**
+
+```bash
+# Generate Prisma client
+npm run prisma:generate
+
+# Run migrations
+npm run prisma:migrate
+
+# Seed the database with initial data
+npm run db:seed
+```
+
+5. **Start the development server**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6. **Access the website**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Admin Dashboard: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+  - Default admin credentials:
+    - Email: admin@example.com
+    - Password: admin123
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build for Production
 
-## Learn More
+```bash
+npm run build
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Database Management
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can use Prisma Studio to manage your database:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run prisma:studio
+```
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+digitalspeed/
+├── prisma/                # Prisma schema and migrations
+├── public/                # Static assets
+├── src/
+│   ├── app/               # Next.js App Router
+│   │   ├── (admin)/       # Admin dashboard routes
+│   │   ├── (public)/      # Public-facing routes
+│   │   ├── api/           # API routes
+│   ├── components/        # React components
+│   │   ├── admin/         # Admin dashboard components
+│   │   ├── public/        # Public-facing components
+│   │   ├── ui/            # Shared UI components
+│   ├── lib/               # Utility functions and libraries
+│   ├── types/             # TypeScript type definitions
+├── .env                   # Environment variables
+├── package.json           # Project dependencies
+├── tailwind.config.js     # Tailwind CSS configuration
+└── tsconfig.json          # TypeScript configuration
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
