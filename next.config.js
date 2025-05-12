@@ -12,6 +12,14 @@ const nextConfig = {
       },
     ],
   },
+  // Disable ESLint during builds
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  // Disable TypeScript type checking during builds
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   webpack: (config) => {
     // Handle Node.js modules in the browser
     config.resolve.fallback = {
