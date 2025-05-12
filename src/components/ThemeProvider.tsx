@@ -146,5 +146,5 @@ function MoonIcon({ className = '' }: { className?: string }) {
   );
 }
 
-// We already imported useTheme at the top, so no need to re-export it
-// export { useTheme } from 'next-themes';
+// Re-export the useTheme hook for other components to use
+export { useTheme };
