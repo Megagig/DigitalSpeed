@@ -5,6 +5,7 @@ import { SessionProvider } from '@/components/SessionProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import NavigationLoader from '@/components/NavigationLoader';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -39,6 +40,13 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://digitalspeed.com'),
   alternates: {
     canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
     title: 'DigitalSpeed - Web Development & Digital Agency',
@@ -127,6 +135,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
+            <NavigationLoader />
             <div className="flex flex-col min-h-screen bg-background text-foreground">
               <Header />
               <main className="flex-grow">{children}</main>

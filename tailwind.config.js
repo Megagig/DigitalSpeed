@@ -108,6 +108,7 @@ module.exports = {
         'pulse-slow': 'pulse 3s infinite',
         'theme-toggle':
           'themeToggle 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)',
+        'loading-bar': 'loadingBar 2s ease-in-out infinite',
       },
 
       keyframes: {
@@ -139,6 +140,11 @@ module.exports = {
           '0%': { transform: 'rotate(0deg)' },
           '50%': { transform: 'rotate(45deg)' },
           '100%': { transform: 'rotate(0deg)' },
+        },
+        loadingBar: {
+          '0%': { width: '0%' },
+          '50%': { width: '70%' },
+          '100%': { width: '100%' },
         },
       },
 
