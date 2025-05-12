@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash } from 'lucide-react';
+import { FiTrash } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 
 interface DeleteBlogButtonProps {
@@ -43,16 +43,19 @@ export default function DeleteBlogButton({ blogId }: DeleteBlogButtonProps) {
         className="text-red-600 hover:text-red-900"
         aria-label="Delete blog"
       >
-        <Trash size={18} />
+        <FiTrash size={18} />
       </button>
 
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Confirm Deletion
+            </h3>
             <p className="text-gray-500 mb-6">
-              Are you sure you want to delete this blog post? This action cannot be undone.
+              Are you sure you want to delete this blog post? This action cannot
+              be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button

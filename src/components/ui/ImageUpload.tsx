@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { uploadImage } from '@/lib/cloudinary';
 import { FiUpload, FiX } from 'react-icons/fi';
 import Image from 'next/image';
 
@@ -17,7 +16,9 @@ export default function ImageUpload({
   className = '',
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    currentImage || null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,11 +32,26 @@ export default function ImageUpload({
     };
     reader.readAsDataURL(file);
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary via API route
     try {
       setIsUploading(true);
-      const result = await uploadImage(file);
-      if (result && 'secure_url' in result) {
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'digitalspeed');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const result = await response.json();
+
+      if (result && result.secure_url) {
         onImageUploaded(result.secure_url);
       }
     } catch (error) {
@@ -67,12 +83,7 @@ export default function ImageUpload({
 
       {previewUrl ? (
         <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden">
-          <Image
-            src={previewUrl}
-            alt="Preview"
-            fill
-            className="object-cover"
-          />
+          <Image src={previewUrl} alt="Preview" fill className="object-cover" />
           <button
             type="button"
             onClick={handleRemoveImage}

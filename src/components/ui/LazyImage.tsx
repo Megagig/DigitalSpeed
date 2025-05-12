@@ -36,7 +36,11 @@ export default function LazyImage({
 
   useEffect(() => {
     // Use Intersection Observer to detect when the image is in view
-    if (!priority && typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    if (
+      !priority &&
+      typeof window !== 'undefined' &&
+      'IntersectionObserver' in window
+    ) {
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -49,7 +53,9 @@ export default function LazyImage({
         { rootMargin: '200px' } // Load images when they're 200px from viewport
       );
 
-      const element = document.getElementById(`lazy-img-${src.replace(/[^a-zA-Z0-9]/g, '')}`);
+      const element = document.getElementById(
+        `lazy-img-${src.replace(/[^a-zA-Z0-9]/g, '')}`
+      );
       if (element) {
         observer.observe(element);
       }
@@ -69,7 +75,18 @@ export default function LazyImage({
 
   const handleError = () => {
     // If image fails to load, use a placeholder
-    setImgSrc('/profile-placeholder.jpg');
+    // Use a different placeholder based on the context
+    if (src.includes('blog')) {
+      setImgSrc('/images/placeholders/blog-placeholder.jpg');
+    } else if (src.includes('project')) {
+      setImgSrc('/images/placeholders/project-placeholder.jpg');
+    } else if (src.includes('product')) {
+      setImgSrc('/images/placeholders/product-placeholder.jpg');
+    } else if (src.includes('skills')) {
+      setImgSrc('/images/placeholders/skill-placeholder.jpg');
+    } else {
+      setImgSrc('/images/placeholders/image-placeholder.jpg');
+    }
   };
 
   return (

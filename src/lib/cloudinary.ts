@@ -1,10 +1,34 @@
-import { v2 as cloudinary } from 'cloudinary';
+// Use a dynamic import for cloudinary to avoid Node.js module issues
+let cloudinary: any;
 
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Initialize cloudinary only on the server side
+if (typeof window === 'undefined') {
+  // Server-side only
+  import('cloudinary').then(({ v2 }) => {
+    cloudinary = v2;
+    cloudinary.config({
+      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+  });
+} else {
+  // Client-side mock (will be replaced with actual implementation in API routes)
+  cloudinary = {
+    uploader: {
+      upload: () => {
+        throw new Error(
+          'Cloudinary upload should be called from an API route, not client-side'
+        );
+      },
+      destroy: () => {
+        throw new Error(
+          'Cloudinary destroy should be called from an API route, not client-side'
+        );
+      },
+    },
+  };
+}
 
 export { cloudinary };
 

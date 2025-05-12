@@ -1,6 +1,12 @@
 'use client';
 
-import { FileText, Briefcase, ShoppingBag, Image, MessageSquare } from 'lucide-react';
+import {
+  FiFileText,
+  FiBriefcase,
+  FiShoppingBag,
+  FiImage,
+  FiMessageSquare,
+} from 'react-icons/fi';
 
 interface DashboardStatsProps {
   totalBlogs: number;
@@ -21,31 +27,31 @@ export default function DashboardStats({
     {
       title: 'Total Blogs',
       value: totalBlogs,
-      icon: FileText,
+      icon: FiFileText,
       color: 'bg-blue-500',
     },
     {
       title: 'Total Projects',
       value: totalProjects,
-      icon: Briefcase,
+      icon: FiBriefcase,
       color: 'bg-green-500',
     },
     {
       title: 'Total Products',
       value: totalProducts,
-      icon: ShoppingBag,
+      icon: FiShoppingBag,
       color: 'bg-purple-500',
     },
     {
       title: 'Gallery Items',
       value: totalGalleryItems,
-      icon: Image,
+      icon: FiImage,
       color: 'bg-yellow-500',
     },
     {
       title: 'Contacts',
       value: totalContacts,
-      icon: MessageSquare,
+      icon: FiMessageSquare,
       color: 'bg-red-500',
     },
   ];

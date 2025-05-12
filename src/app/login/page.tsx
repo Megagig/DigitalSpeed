@@ -20,17 +20,22 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // Use redirect: true to let NextAuth handle the redirect and error display
       const result = await signIn('credentials', {
-        redirect: false,
+        redirect: true,
         email,
         password,
+        callbackUrl,
       });
 
+      // The code below won't execute if redirect is true
+      // but we'll keep it as a fallback
       if (result?.error) {
-        throw new Error(result.error);
+        console.error('Login error:', result.error);
+        setIsLoading(false);
+      } else if (result?.url) {
+        router.push(result.url);
       }
-
-      router.push(callbackUrl);
     } catch (error) {
       console.error('Login failed:', error);
       setIsLoading(false);
@@ -46,7 +51,10 @@ export default function LoginPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link href="/" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link
+              href="/"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               go back to the homepage
             </Link>
           </p>
@@ -58,7 +66,9 @@ export default function LoginPage() {
               <div className="ml-3">
                 <p className="text-sm text-red-700">
                   {error === 'CredentialsSignin'
-                    ? 'Invalid email or password'
+                    ? 'Invalid email or password. Try admin@example.com / admin123'
+                    : error === 'AccessDenied'
+                    ? 'Access denied. You do not have permission to access this resource.'
                     : 'An error occurred. Please try again.'}
                 </p>
               </div>
