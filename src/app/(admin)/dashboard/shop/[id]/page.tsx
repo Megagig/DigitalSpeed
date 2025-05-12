@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import ProductForm from '@/components/admin/shop/ProductForm';
-import { PageProps } from 'next';
 
 type EditProductPageProps = {
   params: {
     id: string;
   };
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
 export default async function EditProductPage({

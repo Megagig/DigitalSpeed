@@ -1,13 +1,12 @@
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import ProjectForm from '@/components/admin/projects/ProjectForm';
-import { PageProps } from 'next';
 
 type EditProjectPageProps = {
   params: {
     id: string;
   };
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
 async function getProject(id: string) {

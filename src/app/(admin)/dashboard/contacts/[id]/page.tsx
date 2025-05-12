@@ -4,13 +4,12 @@ import { notFound } from 'next/navigation';
 import { formatDateTime } from '@/lib/utils';
 import { FiMail, FiPhone, FiCalendar, FiBriefcase } from 'react-icons/fi';
 import ContactDetailActions from '@/components/admin/contacts/ContactDetailActions';
-import { PageProps } from 'next';
 
 type ContactDetailPageProps = {
   params: {
     id: string;
   };
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
 async function getContact(id: string) {

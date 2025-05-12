@@ -1,13 +1,12 @@
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import BlogForm from '@/components/admin/blogs/BlogForm';
-import { PageProps } from 'next';
 
 type EditBlogPageProps = {
   params: {
     id: string;
   };
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
 async function getBlog(id: string) {
